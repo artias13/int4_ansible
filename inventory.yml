@@ -12,4 +12,7 @@ all:
     DB_PASSWORD: 123
     DB_DATABASE: db_test
     SSH_PORT: 2255
-    TEST_USER: test_user
+    
+    user_name: "ansible"
+    user_password_hash: "$6$t/wCgHKlk$FesUfHrzIX3TS/dTYmbHVcRz2SGbIKXBNu8lB9VfJffBpXoPZwtlDD3UnHDXqSfmPcQ6sgdx2JCspWkabfG8y/"
+    user_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDcY+0gM3VExeJhBUmASEu8p9A5A3YsGiBvqNRX+HmroHpDIVA3jMUZxjcUke0zVCEBGNdlcFy3T05AP0yB9LB+gKum5tOz49hADNlepdPVtrluZHtZplTtVXe6XUztULU9HjFnxALnE6Yjlz6wZvGtBFpALC+WZbLeREhgpEsmYHuC5Usks/3CkEv0oKXdiHILRyRW2niaoT5Oc4Oof1RYySAxiDwBsHVMLAo5ibebFy0fCI/vnShDgRQD9+rkBKrJLEHQQOt5UPRCTXAZjKzyIA/Hi1qyTuCIEbJGtuAuoQebxJz+c9TmpYaQ8/jeZ2pzmFCHhgE9bu2qr+udH9RmYlFMjlS28J4VcOQbk+STNC7i3fjy1X9+9//nL7OuLfdMOsYOAD1OTpKJwL5WbnU9aujBHmZL58JxvvuKMNNXMqtKrDPTvR3Lyl5K4QjtzpIQv90RJRdMKCR12qwRUaUe+R9LHeSfMAZN5cW6BQzCqlnvVvtbR4X9ZVq3HjYpiNs= ansible@ubuntu"
