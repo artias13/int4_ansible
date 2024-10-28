@@ -87,17 +87,7 @@
         owner: root
         group: root
         mode: 0755
-
-    - name: "Configure systemd-journald"
-      copy:
-        src: "journal-override.conf"
-        dest: "/etc/systemd/journald.conf.d/override.conf"
-        owner: root
-        group: root
-        mode: 0644
-      notify:
-        - "Restart systemd-journald"
-  
+        
     - name: Install prerequisites
       apt:
         name:
@@ -126,10 +116,11 @@
       apt:
         update_cache: yes
 
-    - name: Install PostgreSQL 16
+    - name: Install required packages
       apt:
         name:
           - postgresql-16
+          - ufw
           - postgresql-contrib-16
           - postgresql-common
           - python3
@@ -155,21 +146,21 @@
 
     - name: Check if PostgreSQL cluster exists
       shell: |
-        if pg_lsclusters | grep -q '14 main'; then
+        if pg_lsclusters | grep -q '16 main'; then
           echo 'Cluster exists'
         else
-          pg_createcluster 14 main
+          pg_createcluster 16 main
         fi
       register: create_cluster
       ignore_errors: true
 
     - name: Check if PostgreSQL is running
-      command: pg_ctlcluster 14 main status
+      command: pg_ctlcluster 16 main status
       register: postgres_status
       ignore_errors: true
 
     - name: Start PostgreSQL cluster if not running
-      command: pg_ctlcluster 14 main start
+      command: pg_ctlcluster 16 main start
       when: postgres_status.stdout.find('is not running') != -1
 
 - name: CONFIGURE DB
@@ -179,7 +170,7 @@
     - name: Setup pg_hba.conf
       blockinfile:
         create: true
-        path: /etc/postgresql/14/main/pg_hba.conf
+        path: /etc/postgresql/16/main/pg_hba.conf
         block: |
           local all {{ hostvars[inventory_hostname]['DB_USER'] }} peer
           host all all {{ hostvars[inventory_hostname]['DB_HOST'] }}/32 trust
@@ -187,7 +178,7 @@
     - name: Setup postgresql.conf
       blockinfile:
         create: true
-        path: /etc/postgresql/14/main/postgresql.conf
+        path: /etc/postgresql/16/main/postgresql.conf
         block: | 
           listen_addresses = '*'
           port = {{ hostvars[inventory_hostname]['DB_PORT'] }}
