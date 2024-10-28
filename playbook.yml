@@ -8,46 +8,98 @@
         upgrade: dist
         cache_valid_time: 86400
     
-    - name: Add a new user
+    - name: "Add user '{{ user_name }}'"
       user:
-        name: "{{ TEST_USER }}"
-        password: "{{ hostvars[inventory_hostname]['DB_PORT'] }}"
- 
-    - name: Add user to the sudoers
+        name: "{{ user_name }}"
+        password: "{{ user_password_hash }}"
+        shell: "/bin/zsh"
+        comment: "Ronnie P. Thomas"
+        groups: ["sudo", "systemd-journal", "adm"]
+        state: present
+
+    - name: "Setup authorized_keys for {{ user_name }}"
+      authorized_key:
+        user: "{{ user_name }}"
+        key: "{{ user_ssh_key }}"
+        state: present
+
+    - name: "Ensure /etc/sudoers.d exists"
+      file:
+        path: "/etc/sudoers.d"
+        state: directory
+        owner: root
+        group: root
+
+    - name: "Configure sudoers"
       copy:
-        dest: "/etc/sudoers.d/ansible"
-        content: "ansible  ALL=(ALL:ALL)  NOPASSWD: ALL"
- 
-    - name: Deploy SSH Key
-      authorized_key: user=ansible
-                      key="{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
-                      state=present
- 
-    - name: Disable Password Authentication
+        src: "sudoers"
+        dest: "/etc/sudoers.d/sudoers"
+        mode: 0440
+        owner: root
+        group: root
+        validate: "/usr/sbin/visudo -csf %s"
+
+    - name: "Set the timezone"
+      file:
+        src: "/usr/share/zoneinfo/{{ time_zone_file }}"
+        dest: "/etc/localtime"
+        state: link
+        owner: root
+        group: root
+
+    - name: "Setting the hostname"
+      copy:
+        content: "{{ host_name }}"
+        dest: "/etc/hostname"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: "Adding hostname to /etc/hosts"
       lineinfile:
-           dest=/etc/ssh/sshd_config
-           regexp='^PasswordAuthentication'
-           line="PasswordAuthentication no"
-           state=present
-           backup=yes
-    notify:
-       - restart ssh
- 
-    - name: Disable Root Login
+        path: "/etc/hosts"
+        line: "127.1.1.1 {{ host_name }}.{{ host_domain }} {{ host_name }}"
+        state: present
+
+    - name: "Disable SSH password authentication"
       lineinfile:
-           dest=/etc/ssh/sshd_config
-           regexp='^PermitRootLogin'
-           line="PermitRootLogin no"
-           state=present
-           backup=yes
-    notify:
-       - restart ssh
- 
-  handlers:
-    - name: restart ssh
-      service:
-        name=sshd
-        state=restarted
+        path: "/etc/ssh/sshd_config"
+        regex: '^(\#|\s)*PasswordAuthentication\s*(yes|no)$'
+        line: "PasswordAuthentication no"
+
+    - name: "Ensure system.conf.d exists"
+      file:
+        path: "/etc/systemd/system.conf.d"
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: "Configure systemd-system settings"
+      copy:
+        src: "system-override.conf"
+        dest: "/etc/systemd/system.conf.d/override.conf"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: "Ensure journald.conf.d exists"
+      file:
+        path: "/etc/systemd/journald.conf.d"
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: "Configure systemd-journald"
+      copy:
+        src: "journal-override.conf"
+        dest: "/etc/systemd/journald.conf.d/override.conf"
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - "Restart systemd-journald"
     
     - name: Install Python packages
       pip:
