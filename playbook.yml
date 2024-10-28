@@ -98,22 +98,39 @@
       notify:
         - "Restart systemd-journald"
   
-    - name: Add PostgreSQL APT repository key
-      apt_key:
-        url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+    - name: Install prerequisites
+      apt:
+        name:
+          - curl
+          - ca-certificates
         state: present
+
+    - name: Create directory for PostgreSQL GPG key
+      file:
+        path: /usr/share/postgresql-common/pgdg
+        state: directory
+
+    - name: Download PostgreSQL GPG key
+      get_url:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        dest: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+        mode: '0644'
 
     - name: Add PostgreSQL APT repository
       apt_repository:
-        repo: "deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main"
+        repo: "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bullseye-pgdg main"
         state: present
         filename: "pgdg"
 
-    - name: Install required packages
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install PostgreSQL 16
       apt:
         name:
-          - postgresql-14
-          - postgresql-contrib
+          - postgresql-16
+          - postgresql-contrib-16
           - postgresql-common
           - python3
           - python3-dev
