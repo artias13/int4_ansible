@@ -1,0 +1,15 @@
+all:
+  hosts:
+    ansible1:
+      ansible_host: 192.168.159.142
+      ansible_user: ansible
+      ansible_password: 123
+
+  vars:
+    DB_HOST: 192.168.159.142
+    DB_PORT: 5432
+    DB_USER: postgres
+    DB_PASSWORD: 123
+    DB_DATABASE: db_test
+    SSH_PORT: 2255
+    TEST_USER: test_user
