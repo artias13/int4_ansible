@@ -97,11 +97,6 @@
         mode: 0644
       notify:
         - "Restart systemd-journald"
-    
-    - name: Install Python packages
-      pip:
-        name:
-          - psycopg2-binary
   
     - name: Add PostgreSQL APT repository key
       apt_key:
@@ -126,7 +121,12 @@
           - python3-pip
           - jq
         state: present
-
+    
+    - name: Install Python packages
+      pip:
+        name:
+          - psycopg2-binary
+    
     - name: Check PostgreSQL version
       command: psql --version
       register: psql_version
