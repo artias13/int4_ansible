@@ -12,9 +12,8 @@
       user:
         name: "{{ user_name }}"
         password: "{{ user_password_hash }}"
-        shell: "/bin/zsh"
-        comment: "Ronnie P. Thomas"
-        groups: ["sudo", "systemd-journal", "adm"]
+        shell: "/bin/bash"
+        groups: ["sudo", "systemd-journal"]
         state: present
 
     - name: "Setup authorized_keys for {{ user_name }}"
@@ -30,14 +29,16 @@
         owner: root
         group: root
 
-    - name: "Configure sudoers"
-      copy:
-        src: "sudoers"
-        dest: "/etc/sudoers.d/sudoers"
-        mode: 0440
-        owner: root
-        group: root
-        validate: "/usr/sbin/visudo -csf %s"
+    - name: Add user to sudoers file
+      hosts: localhost
+      become: true
+      tasks:
+        - name: Add user to sudoers file
+          lineinfile:
+            dest: /etc/sudoers
+            line: 'ansible ALL=(ALL:ALL) NOPASSWD:ALL'
+            validate: 'visudo -cf %s'
+            state: present
 
     - name: "Set the timezone"
       file:
