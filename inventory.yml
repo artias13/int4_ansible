@@ -1,9 +1,10 @@
 all:
   hosts:
     ansible1:
-      ansible_host: 192.168.159.142
+      ansible_host: 192.168.159.148
       ansible_user: ansible
       ansible_password: 123
+      ansible_become_password: 123
 
   vars:
     DB_HOST: 192.168.159.142
